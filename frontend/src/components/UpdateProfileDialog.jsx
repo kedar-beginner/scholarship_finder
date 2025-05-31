@@ -21,9 +21,9 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
     phoneNumber: user?.phoneNumber || "",
     bio: user?.profile?.bio || "",
     special_c: user?.special_c?.map((cat) => cat) || [], 
-    family_i:user.family_i || "",
-    GPA:user.GPA || "",
-    course:user.course ||" ",
+    family_i:user?.family_i || "",
+    GPA:user?.GPA || "",
+    course:user?.course?.map((c) => c) || [],
   });
 
   const changeEventHandler = (e) => {
