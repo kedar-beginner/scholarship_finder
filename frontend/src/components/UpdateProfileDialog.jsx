@@ -23,7 +23,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
     special_c: user?.special_c?.map((cat) => cat) || [], 
     family_i:user?.family_i || "",
     GPA:user?.GPA || "",
-    course:user?.course?.map((c) => c) || [],
+    course:user?.course || "",
   });
 
   const changeEventHandler = (e) => {
