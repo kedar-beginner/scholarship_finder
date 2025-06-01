@@ -6,11 +6,14 @@ import { useSelector } from 'react-redux'
 
 function AppiledscholarshipTable() {
   const {allAppliedscholarships} =useSelector(store=>store.scholarship);
-  const [isChecked, setIsChecked] = useState(false);
+  const [checkedRows, setCheckedRows] = useState({}); // { [id]: true/false }
 
-  const handleCheckboxChange = (event) => {
-    setIsChecked(event.target.checked);
-  };
+const handleCheckboxChange = (id) => (event) => {
+  setCheckedRows((prev) => ({
+    ...prev,
+    [id]: event.target.checked,
+  }));
+};
   return (
     <div>
            <Table>
@@ -30,16 +33,17 @@ function AppiledscholarshipTable() {
                             <TableCell>{appliedscholarship?.createdAt.split("T")[0]}</TableCell>
                             <TableCell>{appliedscholarship?.scholarship?.title}</TableCell> 
                             <TableCell>{appliedscholarship?.scholarship?.amount}</TableCell>
-                            <TableCell><label className="flex items-center space-x-2">
-                                          <input
-                                            type="checkbox"
-                                            checked={isChecked}
-                                            onChange={handleCheckboxChange}
-                                            className="accent-purple-600"
-                                          />
-                                          <span>yes</span>
-                                        </label>
-                            </TableCell>
+                           <TableCell>
+                                  <label className="flex items-center space-x-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={checkedRows[appliedscholarship?._id] || false}
+                                      onChange={handleCheckboxChange(appliedscholarship?._id)}
+                                      className="accent-purple-600"
+                                    />
+                                    <span>yes</span>
+                                  </label>
+                          </TableCell>
                         </TableRow>
                     ))
                   }
