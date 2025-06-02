@@ -19,7 +19,7 @@ app.use(urlencoded({extended:true}));
 app.use(cookieParser());
 
 const corOption ={
-      origin:"http://localhost:5173",
+      origin:"https://scholarship-finder-1-71rx.onrender.com",
       credentials:true
 }
 app.use(cors(corOption));
