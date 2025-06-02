@@ -6,11 +6,10 @@ import { useNavigate } from 'react-router-dom'
 import { setsearchQuery } from '@/redux/scholarshipSlice'
 
 const category =[
-    "ONGC SCHOLRSHIP",
-    "FFE SCHOLRSHIP",
-    "RELINACE SCHOLRSHIP",
-    "HDFC SCHOLARSHIP",
-    "NSP-SCHEME"
+    "Prime Minister's Research Fellowship",
+    "RAU Sports Scholarships 2025-26",
+    "Samsung Solve for Tomorrow India 2025",
+    "SERB Ramanujan Fellowship "
 ]
 function CategoryCarousel() {
   const dispatch =useDispatch();
