@@ -59,8 +59,8 @@ function Scholarship({scholarship}) {
            <p className='text-sm text-gray-600'>{scholarship?.description}</p>
        </div>
        <div className='flex items-center gap-2 mt-4'>
-                    <Badge className={'text-blue-700 font-bold'} variant ="ghost">{scholarship?.grants} Grants</Badge>
-                     <Badge className={'text-[#F83002] font-bold'} variant ="ghost">{scholarship?.s_Type}</Badge>
+                   {/* <Badge className={'text-blue-700 font-bold'} variant ="ghost">{scholarship?.grants} Grants</Badge>
+                     <Badge className={'text-[#F83002] font-bold'} variant ="ghost">{scholarship?.s_Type}</Badge>*/}
                      <Badge className={'text-[#7209B7] font-bold'} variant ="ghost">{scholarship?.amount} INR</Badge>
         </div>
      <div className="mt-4 flex flex-col gap-3">
