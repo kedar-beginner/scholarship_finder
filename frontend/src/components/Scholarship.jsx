@@ -29,9 +29,7 @@ function Scholarship({scholarship}) {
     }`}>
         <div className='flex items-center justify-between'>
             <div className='flex flex-col items-start my-0.5'>
-                   <p className='text-sm text-gray-600'>
-                       {daysAgoFunction(scholarship?.createdAt)===0?"Today":`${daysAgoFunction(scholarship?.createdAt)} days ago`} 
-                   </p>
+                 
                   <p className="text-sm font-bold">
                         {daysRemainFunction(scholarship?.deadline) === 0 ? (
                             <span className=' text-yellow-500'>Deadline today</span>
@@ -57,7 +55,7 @@ function Scholarship({scholarship}) {
             </div>
       </div>
        <div>
-           <h1 className='font-bold text-lg my-2'>{scholarship?.title}</h1>
+         {/* <h1 className='font-bold text-lg my-2'>{scholarship?.title}</h1>*/}
            <p className='text-sm text-gray-600'>{scholarship?.description}</p>
        </div>
        <div className='flex items-center gap-2 mt-4'>
@@ -72,8 +70,8 @@ function Scholarship({scholarship}) {
         </div>
 
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg shadow-sm">
-            <h1 className="font-medium text-gray-700 text-xs">📚 Available for Courses:</h1>
-            <span className="text-red-600 font-semibold text-sm">{scholarship?.course}</span>
+            <h1 className="font-medium text-gray-700 text-xs">📚 eligibility:</h1>
+            <span className="text-red-600 font-semibold text-sm">{scholarship?.eligibility}</span>
         </div>
     </div>
 

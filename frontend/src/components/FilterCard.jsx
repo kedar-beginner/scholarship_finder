@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { RadioGroup } from './ui/radio-group'
 import { Label } from './ui/label'
 import { RadioGroupItem } from './ui/radio-group'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setsearchQuery } from '@/redux/scholarshipSlice'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Button } from './ui/button'
@@ -10,11 +10,11 @@ import { Button } from './ui/button'
 const filterData =[ 
     {
         filterType:"Cources",
-        array:["B.tech","BSC","MBA","M.tech","MBBS","B.COM","BA","PHD"]
+        array:["B.tech","B.Sc","MBA","M.tech","M.B.B.S.","B.COM","BA","PHD"]
     },
     {
         filterType:"GPA",
-        array:["10-9","9-8","8-7","7-6"]
+        array:["1","2","3","4"]
     }
     ,
     {
@@ -66,17 +66,22 @@ const location=[
 function FilterCard() {
     const dispatch =useDispatch();
     const [selectedValue,setSelectedValue]=useState('');
+   const {user} =useSelector(store=>store.auth);
     const changeHandeler =(value)=>{
             setSelectedValue(value);
     }
     useEffect(()=>{
            dispatch(setsearchQuery(selectedValue));
     },[selectedValue])
+    
+    const buttonHandeler =(value)=>{
+           dispatch(setsearchQuery(value));
+    }
   return (
     <div className='w-full bg-white p-3 rounded-md'> 
           <h1 className='font-bold text-lg'>Filter Scholarship</h1>
         <hr className='mt-3 py-1'/> 
-        <Button onClick={()=> navigate(`/description/${scholarship?._id}`)} variant="outline" className="bg-zinc-700 hover:bg-zinc-800 text-white">For you</Button>
+        <Button onClick={() => buttonHandeler(user?.course)} variant="outline" className="bg-zinc-700 hover:bg-zinc-800 text-white">For you</Button>
        
          <RadioGroup value={selectedValue} onValueChange={changeHandeler}>
             {
