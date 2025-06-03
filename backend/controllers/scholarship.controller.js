@@ -14,7 +14,7 @@ export const postscholarship =async (req,res)=>{
             title,
             description,
             special_cat:special_cat.split(","),
-            amount:Number(amount),
+            amount:amount,
             location,
             s_Type, 
             grants,
@@ -38,15 +38,29 @@ export const postscholarship =async (req,res)=>{
 export const getAllscholarships =async (req,res)=>{
     try{
         const keyword=req.query.keyword ||"";
-     
-        const query ={
-            $or:[
-                {title:{$regex:keyword,$options:"i"}},  // here i is use so that it become case sensetive
-                {description:{$regex:keyword,$options:"i"}},
-                { course: { $elemMatch: { $regex: keyword, $options: "i" } } },
-                { course: { $elemMatch: { $regex: "All courses", $options: "i" } } }
-            ]
-        };
+        let t=0;
+        if(keyword==1 ||keyword==2 || keyword==3 || keyword==4){
+               t=1;
+        }
+        let query; 
+            if(!t){
+                        query ={
+                $or:[
+                    {title:{$regex:keyword,$options:"i"}},  // here i is use so that it become case sensetive
+                    {description:{$regex:keyword,$options:"i"}},
+                    {eligibility:{$regex:keyword,$options:"i"}},
+                    { course: { $elemMatch: { $regex: keyword, $options: "i" } } },
+                    { course: { $elemMatch: { $regex: "All courses", $options: "i" } } }
+                ]
+              };
+            }else{
+                query={ 
+                    $or:[
+                         {gpa:{$regex:keyword,$options:"i"}},
+                    ] 
+                };
+            }
+       
       const scholarships =await Scholarship.find(query).populate({
         path:"company"
       }).sort({createdAt:-1});

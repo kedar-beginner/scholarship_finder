@@ -86,12 +86,12 @@ function ScholarshipDescription() {
              <h1 className='font-bold my-1'> Available for Location: <span className='font-normal text-gray-800'>{singlescholarship?.location}</span></h1>
              <h1 className='font-bold my-1'> Description: <span className='font-normal text-gray-800'> {singlescholarship?.description}</span></h1>
              <h1 className='font-bold my-1'> Available for cources: <span className='font-normal text-gray-800'>{singlescholarship?.course}</span></h1>
-             <h1 className='font-bold my-1'> Minimum gpa required : <span className='font-normal text-red-800'>{singlescholarship?.gpa}/10</span></h1>
+             <h1 className='font-bold my-1'> Minimum gpa required : <span className='font-normal text-red-800'>{singlescholarship?.gpa}/4</span></h1>
              <h1 className='font-bold my-1'> AMOUNT: <span className='font-normal text-gray-800'>{singlescholarship?.amount} INR</span></h1>
              <h1 className='font-bold my-1'> Total Application: <span className='font-normal text-gray-800'>{singlescholarship?.applications?.length}</span></h1>
-             <h1 className='font-bold my-1'> Posted Date: <span className='font-normal text-gray-800'>{singlescholarship?.createdAt.split("T")[0]}</span></h1>
+             <h1 className='font-bold my-1'> eligibility: <span className='font-normal text-gray-800'> {singlescholarship?.eligibility} </span></h1>
              <h1 className='font-bold my-1'> Deadline: <span className='font-normal text-red-800'>{singlescholarship?.deadline.split("T")[0]}</span></h1>
-              <h1 className='font-bold my-1'> Apply link:   <a href={singlescholarship?.apply_link} target="_blank" rel="noopener noreferrer"className="font-normal text-blue-800 hover:underline hover:text-blue-600"> {singlescholarship?.apply_link} </a></h1>
+             <h1 className='font-bold my-1'> Apply link:   <a href={singlescholarship?.apply_link} target="_blank" rel="noopener noreferrer"className="font-normal text-blue-800 hover:underline hover:text-blue-600"> {singlescholarship?.apply_link} </a></h1>
         </div>
     </div>
   )

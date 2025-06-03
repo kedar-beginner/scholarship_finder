@@ -9,11 +9,14 @@ const scholarshipSchema =new mongoose.Schema({
         type:String,
         required:true
     },
+    eligibility:{
+              type:String
+    },
      special_cat:[
       { type: String }
      ],
     amount:{
-        type:Number,
+        type:String,
         required:true
     }, 
      location:{

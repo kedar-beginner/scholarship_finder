@@ -28,8 +28,7 @@ function AdminscholarshipsTable() {
             <TableHeader>
                  <TableRow>
                     <TableHead>Company Name</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead>Role</TableHead> 
                     <TableHead className="text-right">Action</TableHead>
                  </TableRow>
             </TableHeader>
@@ -47,7 +46,6 @@ function AdminscholarshipsTable() {
                                         <TableCell>
                                         {scholarship?.title}
                                         </TableCell>
-                                        <TableCell>{scholarship.createdAt.split("T")[0]}</TableCell>
                                     <TableCell className="text-right cursor-pointer"> 
                                         <Popover>
                                             <PopoverTrigger><MoreHorizontal/></PopoverTrigger>
