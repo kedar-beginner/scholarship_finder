@@ -134,7 +134,7 @@ driver.quit()
 # 1. MongoDB connection
 client = MongoClient("mongodb+srv://datascrapper:pass123@cluster0.ynqxc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 
-db = client["scholarshipDB"]
+db = client["test"]
 scholarship_col = db["scholarships"]
 company_col = db["companies"]
 
@@ -153,7 +153,9 @@ for item in scholarship_data:
         company_doc = {
             "name": company_name,
             "logo": logo_url,
-            "userId": ObjectId()  # Replace with a real userId if available
+            "userId": ObjectId("683dbd3bc96a25910cf7a666"),  # Replace with a real userId if available
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         company_id = company_col.insert_one(company_doc).inserted_id
 
@@ -185,8 +187,10 @@ for item in scholarship_data:
             "deadline": deadline_date,
             "apply_link": item["apply link"] or "",
             "company": company_cache.get(item["scholarship name"], ObjectId()),  # fallback ObjectId
-            "created_by": ObjectId(),  # Replace with actual user if needed
-            "applications": []
+            "created_by": ObjectId("683dbd3bc96a25910cf7a666"),  # Replace with actual user if needed
+            "applications": [],
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
 
         scholarship_col.insert_one(scholarship_doc)
