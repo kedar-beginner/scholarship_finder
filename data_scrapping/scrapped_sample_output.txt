@@ -1,0 +1,56 @@
+=== SCHOLARSHIP SCRAPER TEST OUTPUT ===
+
+--- Scholarship 1 ---
+Title       : NSP Centrally Sponsored Post-Matric Scholarship to SC Students, Sikkim 2026
+Course Tags : ['ug', 'pg']
+Category    : ['pwd', 'women', 'sc/st']
+Min GPA     : 0.0
+Amount      : ₹13,500
+Apply Link  : https://www.buddy4study.com/scholarship/nsp-centrally-sponsored-post-matric-scholarship-to-sc-students-sikkim-2026
+Description : Girls SC/ST/OBC Minority Physically Disabled Scholarship Articles SC students studying in Class 11 and above India An annual academic allowance up to ₹13,500 and other benefits 31-Aug-2026 Post-Matric Scholarship to SC Students, Sikkim 2026 is an opportunity offered by the Government of India throug...
+
+==================================================
+
+--- Scholarship 2 ---
+Title       : National Internship in Official Statistics 2026
+Course Tags : ['ug', 'pg']
+Category    : ['pwd', 'women', 'sc/st']
+Min GPA     : 0.0
+Amount      : ₹10,000
+Apply Link  : https://www.buddy4study.com/scholarship/national-internship-in-official-statistics-2026
+Description : Girls SC/ST/OBC Minority Physically Disabled Scholarship Articles Statistics and Mathematics students India An Award of ₹10,000 per month 31-Aug-2026 The National Internship in Official Statistics (NIOS) 2026 is offered by the Ministry of Statistics and Programme Implementation, Government of India....
+
+==================================================
+
+--- Scholarship 3 ---
+Title       : Inlaks-Attakkalari Dance Studentship 2026
+Course Tags : []
+Category    : ['pwd', 'women', 'sc/st']
+Min GPA     : 0.0
+Amount      : ₹3,00,000
+Apply Link  : https://www.buddy4study.com/scholarship/inlaks-attakkalari-dance-studentship-2026
+Description : Girls SC/ST/OBC Minority Physically Disabled Scholarship Articles Dance artist India Up to ₹3,00,000 and other benefits 30-Aug-2026 Inlaks-Attakkalari Dance Studentship 2026 is a joint initiative of the Inlaks Shivdasani Foundation and the Attakkalari Centre for Movement Arts (ACMA), Bengaluru. The ...
+
+==================================================
+
+--- Scholarship 4 ---
+Title       : Heinrich Böll Foundation Doctoral Scholarship 2026
+Course Tags : []
+Category    : ['pwd', 'women', 'sc/st']
+Min GPA     : 0.0
+Amount      : Variable
+Apply Link  : https://www.buddy4study.com/scholarship/heinrich-boll-foundation-doctoral-scholarship
+Description : Girls SC/ST/OBC Minority Physically Disabled Scholarship Articles Doctoral students Germany A scholarship of €1650 per month and other benefits 01-Sep-2026 The Heinrich Böll Foundation Doctoral Scholarship 2026  is an opportunity provided by the Heinrich Böll Foundation to Doctoral candidates. This ...
+
+==================================================
+
+--- Scholarship 5 ---
+Title       : Nilam Patel Bahushrut Foundation Study Abroad Scholarship 2026
+Course Tags : ['ug', 'pg']
+Category    : ['pwd', 'women', 'sc/st']
+Min GPA     : 0.0
+Amount      : Variable
+Apply Link  : https://www.buddy4study.com/scholarship/nilam-patel-bahushrut-foundation-study-abroad-scholarship-2026
+Description : Girls SC/ST/OBC Minority Physically Disabled Scholarship Articles Hearing Impaired students of Maharashtra and Gujarat Abroad Scholarships, prizes and awards 31-Aug-2026 Nilam Patel Bahushrut Foundation Study Abroad Scholarship 2026 is an initiative by the Nilam Patel Bahushrut Foundation (a public ...
+
+==================================================

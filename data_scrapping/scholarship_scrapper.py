@@ -1,200 +1,145 @@
+
+import re
+import os
+import spacy
+from datetime import datetime, timezone
+from urllib.parse import urljoin
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 from bson.objectid import ObjectId
-from datetime import datetime, timezone
 
-# ---------- 1) Setup headless Chrome and suppress noisy logs ----------
-options = Options()
-options.add_argument("--headless")
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-software-rasterizer")
-options.add_argument("--log-level=3")  # only fatal errors
+# Load NLP Model
+nlp = spacy.load("en_core_web_sm")
 
-driver = webdriver.Chrome(options=options)
-wait = WebDriverWait(driver, 10)
+COURSE_ALIASES = {
+    "ug": ["ug", "undergraduate", "bachelor", "bachelors", "under-graduate", "degree"],
+    "pg": ["pg", "postgraduate", "master", "masters", "post-graduate"],
+    "btech": ["b.tech", "btech", "bachelor of technology", "b.e", "engineering"],
+    "mtech": ["m.tech", "mtech", "master of technology"],
+    "bsc": ["b.sc", "bsc", "bachelor of science"],
+    "mba": ["mba", "m.b.a", "master of business administration"],
+    "class 12": ["12th", "class 12", "class xii", "10+2"]
+}
 
-# ---------- 2) Collect only valid scholarship links ----------
-base_url = "https://www.buddy4study.com/scholarships"
-query   = "?filter=eyJSRUxJR0lPTiI6W10sIkdFTkRFUiI6W10sIkVEVUNBVElPTiI6W10sIkNPVU5UUlkiOltdLCJDT1VSU0UiOltdLCJTVEFURSI6W10sIkZPUkVJR04iOltdLCJzb3J0T3JkZXIiOiJERUFETElORSJ9&page="
-always_open = "https://www.buddy4study.com/open-scholarships?filter=eyJSRUxJR0lPTiI6W10sIkdFTkRFUiI6W10sIkVEVUNBVElPTiI6W10sIkNPVU5UUlkiOltdLCJDT1VSU0UiOltdLCJTVEFURSI6W10sIkZPUkVJR04iOltdLCJzb3J0T3JkZXIiOiJERUFETElORSJ9"
+CATEGORY_ALIASES = {
+    "women": ["girl", "girls", "female", "women"],
+    "sc/st": ["sc", "st", "dalit", "tribal"],
+    "pwd": ["pwd", "disabled", "handicapped"]
+}
 
-unique_links = set()
-for page_num in (1, 3):
-    if page_num == 1:
-      url = base_url
-    elif page_num == 2:
-      url = f"{base_url}{query}{page_num}"
-    else:
-      url = f"{always_open}"
+def normalize_terms(text, taxonomy_map):
+    if not text:
+        return []
+    text_lower = text.lower()
+    found_tags = set()
+    for canonical_key, aliases in taxonomy_map.items():
+        for alias in aliases:
+            if re.search(r"\b" + re.escape(alias) + r"\b", text_lower):
+                found_tags.add(canonical_key)
+    return list(found_tags)
 
-    driver.get(url)
-    # wait until at least one card is present
-    try:
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "Listing_categoriesCard___CHju")))
-    except:
-        print(f"[!] No cards loaded on page {page_num}, skipping")
-        continue
+def extract_gpa(text):
+    if not text:
+        return 0.0
+    match = re.search(r"(?:cgpa|gpa|marks)\s*(?:>=|>|of|min)?\s*([0-9]+\.[0-9]+|[0-9]{2})", text, re.IGNORECASE)
+    if match:
+        val = float(match.group(1))
+        return val if val <= 10.0 else round(val / 10.0, 2) 
+    return 0.0
 
+def extract_amount(text):
+    if not text:
+        return "Variable"
+    match = re.search(r"(?:INR|₹|Rs\.?)\s*([\d,]+)", text, re.IGNORECASE)
+    if match:
+        return match.group(0)
+    return "Variable"
+
+def deep_scrape_scholarships():
+    options = Options()
+    options.add_argument("--headless=new")
+    driver = webdriver.Chrome(options=options)
+    wait = WebDriverWait(driver, 10)
+    
+    base_url = "https://www.buddy4study.com"
+    driver.get(f"{base_url}/scholarships")
+    
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, "Listing_categoriesCard___CHju")))
     soup = BeautifulSoup(driver.page_source, "html.parser")
+    
+    unique_links = set()
     for card in soup.find_all("div", class_="Listing_categoriesCard___CHju"):
         for a in card.find_all("a", href=True):
-            href = a["href"]
-            # keep only real scholarship links
-            if href.startswith("/scholarship") and not any(x in href for x in ("/page/", "nurtneo")):
-                unique_links.add(urljoin(base_url, href))
-
-print(f">>> Found {len(unique_links)} scholarship links")
-
-# ---------- 3) Scrape each scholarship detail page ----------
-scholarship_data = []
-for link in sorted(unique_links):
-    driver.get(link)
-    # wait for the main title to appear (indicates page fully loaded)
-    try:
-        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "scholarshipHeader_mainTitle__RAoQS")))
-    except:
-        print(f"[!] Timeout or unexpected structure: {link}")
-        continue
-
-    soup = BeautifulSoup(driver.page_source, "html.parser")
-
-    def text_or_none(sel, cls):
-        tag = soup.select_one(f"{sel}.{cls}")
-        return tag.get_text(strip=True) if tag else None
-
-    def attr_or_none(sel, cls, attr):
-        tag = soup.select_one(f"{sel}.{cls}")
-        return tag[attr] if tag and tag.has_attr(attr) else None
-
-    # image src
-    image_source = attr_or_none("div", "scholarshipHeader_brandScholarImg__cwkNm img", "src")
-
-    # scholarship name
-    scholarship_name = text_or_none("h1", "scholarshipHeader_mainTitle__RAoQS")
-
-    # eligibility, region, award, deadline
-    info_ps = [p.get_text(strip=True)
-               for p in soup.select("div.ScholarshipDetails_eligibilityDetailsCont__KqkAH p")]
-    while len(info_ps) < 4:
-        info_ps.append(None)
-    eligibility, region, award, deadline = info_ps[:4]
-
-    # about the program & source
-    about_ps = [p.get_text(strip=True)
-                for p in soup.select("div.ScholarshipDetails_aboutProgram__6iIDA p")]
-    about_the_program = about_ps[0] if len(about_ps) > 0 else None
-    source           = about_ps[1] if len(about_ps) > 1 else None
-
-    # apply link (2nd <a> in the article)
-    anchors = soup.select("article.ScholarshipDetails_studyLine__ka4X2 a")
-    apply_link = anchors[1]["href"] if len(anchors) > 1 and anchors[1].has_attr("href") else None
-
-    scholarship_data.append({
-        "url": link,
-        "image source": image_source,
-        "scholarship name": scholarship_name,
-        "eligibility": eligibility,
-        "region": region,
-        "award": award,
-        "deadline": deadline,
-        "about the program": about_the_program,
-        "source": source,
-        "apply link": apply_link
-    })
-
-driver.quit()
-
-# ---------- 4) Output ----------
-# print(f"\n>>> Total scholarships scraped: {len(scholarship_data)}")
-# for idx, item in enumerate(scholarship_data, 1):
-#     print(f"\n[{idx}] {item['scholarship name']}")
-#     for k, v in item.items():
-#         if k != "scholarship name":
-#             print(f"    {k}: {v}")
-
-
-
-# Replace with your actual MongoDB Atlas connection string
-# client = MongoClient("mongodb+srv://datascrapper:pass123@cluster0.mongodb.net/?retryWrites=true&w=majority")
-# db = client["scholarshipDB"]
-
-# scholarship_col = db["scholarships"]
-# company_col = db["companies"]
-
-
-# 1. MongoDB connection
-client = MongoClient("mongodb+srv://datascrapper:pass123@cluster0.ynqxc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-
-db = client["test"]
-scholarship_col = db["scholarships"]
-company_col = db["companies"]
-
-# 2. Insert companies (avoid duplicates based on 'name')
-company_cache = {}  # To map source -> ObjectId
-
-for item in scholarship_data:
-    company_name = item["scholarship name"] or "Unknown Source"
-    logo_url = item["image source"] or ""
-
-    # Check if company already exists
-    existing = company_col.find_one({"name": company_name})
-    if existing:
-        company_id = existing["_id"]
-    else:
-        company_doc = {
-            "name": company_name,
-            "logo": logo_url,
-            "userId": ObjectId("683dbd3bc96a25910cf7a666"),  # Replace with a real userId if available
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
-        }
-        company_id = company_col.insert_one(company_doc).inserted_id
-
-    company_cache[company_name] = company_id
-
-# 3. Insert scholarships
-for item in scholarship_data:
-    try:
-        # Parse deadline string to a Date object (fallback to current date)
-        deadline = item["deadline"]
+            if "/scholarship/" in a["href"]:
+                unique_links.add(urljoin(base_url, a["href"]))
+                
+    scraped_docs = []
+    
+    SYSTEM_COMPANY_ID = ObjectId("64abcd1234567890abcdef12")
+    SYSTEM_USER_ID = ObjectId("64abcd1234567890abcdef34")
+    
+    for link in unique_links: 
         try:
-            deadline_date = datetime.strptime(deadline, "%d-%b-%Y")
-        except:
-            # print(f"Invalid date format for {scholarship_data['title']}: {deadline_str}")
-            # scholarship_data["deadline"] = None
-            deadline_date = datetime.now(timezone.utc)
+            driver.get(link)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "article")))
+            detail_soup = BeautifulSoup(driver.page_source, "html.parser")
+            
+            title_tag = detail_soup.find("h1")
+            title = title_tag.get_text(strip=True) if title_tag else "Untitled"
+            
+            full_text = " ".join([p.get_text(strip=True) for p in detail_soup.find_all("p")])
+            
+            apply_btn = detail_soup.find("a", text=re.compile("Apply Now", re.IGNORECASE))
+            apply_link = urljoin(base_url, apply_btn["href"]) if apply_btn and apply_btn.has_attr("href") else link
+            
+            doc = {
+                "title": title,
+                "description": full_text[:500] + "...", 
+                "eligibility": full_text,
+                "special_cat": normalize_terms(full_text, CATEGORY_ALIASES),
+                "amount": extract_amount(full_text),
+                "location": "All India",
+                "s_Type": "Merit-based",
+                "grants": 1,
+                "gpa": extract_gpa(full_text),
+                "course": normalize_terms(full_text, COURSE_ALIASES), 
+                "deadline": datetime.now(timezone.utc), # Defaults to current date; replace with parsed date if available
+                "apply_link": apply_link,
+                "company": SYSTEM_COMPANY_ID,
+                "created_by": SYSTEM_USER_ID,
+                "applications": []
+            }
+            scraped_docs.append(doc)
+            print(f"✓ Cleaned: {title[:30]}...")
+        except Exception as e:
+            print(f"Skipping {link}: {e}")
+            
+    driver.quit()
+    return scraped_docs
 
-        scholarship_doc = {
-            "title": item["scholarship name"] or "Untitled",
-            "description": item["about the program"] or "No description available",
-            "eligibility": item["eligibility"] or "none",
-            "special_cat": [],
-            "amount": item["award"] or "0",
-            "location": item["region"] or "Not specified",
-            "s_Type": "Merit-based",  # Hardcoded or use logic if available
-            "grants": 1,  # Default or based on data
-            "gpa": 3.0,  # Default
-            "course": [],
-            "deadline": deadline_date,
-            "apply_link": item["apply link"] or "",
-            "company": company_cache.get(item["scholarship name"], ObjectId()),  # fallback ObjectId
-            "created_by": ObjectId("683dbd3bc96a25910cf7a666"),  # Replace with actual user if needed
-            "applications": [],
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
-        }
+def load_to_mongodb(docs):
+    if not docs:
+        return
+        
+    mongo_uri = os.environ.get("MONGO_URI", "mongodb")
+    client = MongoClient(mongo_uri)
+    db = client["scholarship_db"]
+    collection = db["scholarships"]
+    
+    operations = [
+        UpdateOne({"apply_link": doc["apply_link"]}, {"$set": doc}, upsert=True)
+        for doc in docs
+    ]
+    
+    result = collection.bulk_write(operations)
+    print(f"DB Update Complete: {result.upserted_count} inserted, {result.modified_count} updated.")
+    client.close()
 
-        scholarship_col.insert_one(scholarship_doc)
-
-    except Exception as e:
-        print(f"Failed to insert scholarship: {item['scholarship name']}, Error: {e}")
-
+if __name__ == "__main__":
+    clean_data = deep_scrape_scholarships()
+    load_to_mongodb(clean_data)
