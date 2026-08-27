@@ -61,5 +61,5 @@ const scholarshipSchema =new mongoose.Schema({
         }
       ]
 },{timestamps:true});
-
+scholarshipSchema.index({ deadline: 1, gpa: 1 });
 export const Scholarship =mongoose.model("Scholarship",scholarshipSchema);
